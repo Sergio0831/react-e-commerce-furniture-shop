@@ -13,8 +13,8 @@ const ProductImages = ({ images = [{ url: "" }] }) => {
             <img
               onClick={() => setMain(images[index])}
               src={image.url}
-              className={image.url === main.url && "active"}
-              key={image.id}
+              className={image.url === main.url ? "active" : null}
+              key={index}
               alt={image.filename}
             />
           );
