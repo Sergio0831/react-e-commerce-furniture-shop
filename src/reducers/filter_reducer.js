@@ -12,10 +12,17 @@ import {
 const filter_reducer = (state, action) => {
   switch (action.type) {
     case LOAD_PRODUCTS:
+      let maxPrice = action.payload.map((p) => p.price);
+      maxPrice = Math.max(...maxPrice);
       return {
         ...state,
         all_products: [...action.payload],
-        filtered_products: [...action.payload]
+        filtered_products: [...action.payload],
+        filters: {
+          ...state.filters,
+          max_price: maxPrice,
+          price: maxPrice
+        }
       };
     case SET_LISTVIEW:
       return {
@@ -55,6 +62,66 @@ const filter_reducer = (state, action) => {
       return {
         ...state,
         filtered_products: tempProducts
+      };
+    case UPDATE_FILTERS:
+      const { name, value } = action.payload;
+      return {
+        ...state,
+        filters: {
+          ...state.filters,
+          [name]: value
+        }
+      };
+    case CLEAR_FILTERS:
+      return {
+        ...state,
+        filters: {
+          ...state.filters,
+          text: "",
+          company: "all",
+          category: "all",
+          color: "all",
+          price: state.filters.max_price,
+          shipping: false
+        }
+      };
+    case FILTER_PRODUCTS:
+      const { all_products } = state;
+      const { text, category, company, color, price, shipping } = state.filters;
+      let currentProducts = [...all_products];
+
+      if (text) {
+        currentProducts = currentProducts.filter((product) =>
+          product.name.toLowerCase().startsWith(text)
+        );
+      }
+      if (category !== "all") {
+        currentProducts = currentProducts.filter(
+          (product) => product.category === category
+        );
+      }
+      if (company !== "all") {
+        currentProducts = currentProducts.filter(
+          (product) => product.company === company
+        );
+      }
+      if (color !== "all") {
+        currentProducts = currentProducts.filter((product) =>
+          product.colors.find((col) => col === color)
+        );
+      }
+      currentProducts = currentProducts.filter(
+        (product) => product.price <= price
+      );
+      if (shipping) {
+        currentProducts = currentProducts.filter(
+          (product) => product.shipping === shipping
+        );
+      }
+
+      return {
+        ...state,
+        filtered_products: currentProducts
       };
     default:
       throw new Error(`No Matching "${action.type}" - action type`);
